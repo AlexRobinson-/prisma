@@ -19,7 +19,12 @@ impl PrismaContext {
         let config = config::load().unwrap();
         let data_resolver = match config.databases.get("default") {
             Some(PrismaDatabase::File(ref config)) if config.connector == "sqlite-native" => {
-                let sqlite = Sqlite::new(config.limit(), config.is_active().unwrap()).unwrap();
+                let sqlite = Sqlite::new(
+                    config.database_file.clone(),
+                    config.limit(),
+                    config.is_active().unwrap(),
+                )
+                .unwrap();
                 Arc::new(sqlite) // FIXME: active is misused here
             }
             _ => panic!("Database connector is not supported, use sqlite with a file for now!"),

@@ -19,14 +19,15 @@ impl ProtoBufInterface {
     pub fn new(config: &PrismaConfig) -> ProtoBufInterface {
         dbg!(config);
         let connector = match config.databases.get("default") {
-            Some(PrismaDatabase::File(ref config))
+            Some(PrismaDatabase::Explicit(ref config))
                 if config.connector == "sqlite-native" || config.connector == "native-integration-tests" =>
             {
+                let server_root = std::env::var("SERVER_ROOT").expect("Env var SERVER_ROOT required but not found.");
                 // FIXME: figure out the right way to do it
                 // we are passing is_active as test_mode parameter
                 // this requires us to put `active: true` in all sqlite-native configs used in tests
                 let sqlite = Sqlite::new(
-                    config.database_file.clone(),
+                    format!("{}/db", server_root).into(),
                     config.limit(),
                     config.is_active().unwrap(),
                 )
